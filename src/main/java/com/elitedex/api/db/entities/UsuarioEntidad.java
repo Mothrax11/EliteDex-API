@@ -1,9 +1,7 @@
 package com.elitedex.api.db.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity(name = "usuarios")
@@ -15,18 +13,26 @@ public class UsuarioEntidad {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id_usuario;
-
-    @Column(name = "nombre_usuario", nullable = true)
-    String nombre_usuario;
-    @Column(name = "contrasena", nullable = true)
-    String contrasena;
-    @Column(name = "correo", nullable = true)
+    
+    @Column(name = "nombre_usuario", nullable = false, unique = true)
+    String nombreUsuario;
+    
+    @Column(name = "contrasena", nullable = false)
+    String password_hash;
+    
+    @Column(name = "correo", nullable = false, unique = true)
     String correo;
 
-    public UsuarioEntidad(String nombreUsuario, String contrasena, String correo) {
-        this.nombre_usuario = nombreUsuario;
-        this.contrasena = contrasena;
+    @Column(name = "imagen_usuario", nullable = true)
+    String logoUrl;
+    
+    public UsuarioEntidad(String nombreUsuario, String correo, String passwordHash) {
+        this.nombreUsuario = nombreUsuario;
         this.correo = correo;
+        this.password_hash = passwordHash;
+        this.logoUrl = null;
     }
-    public UsuarioEntidad(){}
+
+    public UsuarioEntidad() {
+    }
 }
