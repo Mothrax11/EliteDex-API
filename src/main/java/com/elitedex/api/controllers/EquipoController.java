@@ -26,8 +26,8 @@ public class EquipoController {
     @PostMapping("/crear")
     public ResponseEntity<EquipoEntidad> crearEquipo(@RequestBody EquipoDTO dto) {
         EquipoEntidad equipoCreado = equipoService.crear(
-                dto.nombre_equipo(),
-                dto.id_usuario()
+                dto.getNombre_equipo(),
+                dto.getId_usuario()
         );
         // Devolvemos el objeto creado y un código 201 (Created)
         return new ResponseEntity<>(equipoCreado, HttpStatus.CREATED);
@@ -53,8 +53,8 @@ public class EquipoController {
 
         EquipoEntidad equipoActualizado = equipoService.actualizar(
                 idEquipo,
-                dto.nombre_equipo(),
-                dto.id_usuario()
+                dto.getNombre_equipo(),
+                dto.getId_usuario()
         );
         return ResponseEntity.ok(equipoActualizado);
     }
