@@ -1,4 +1,5 @@
 package com.elitedex.api.db.entities;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,17 +12,17 @@ public class EquipoEntidad {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int id_equipo;
+    private int id_equipo;
 
     @Column(name = "nombre_equipo", nullable = false)
-    String nombre_equipo;
+    private String nombre_equipo;
 
     @Column(name = "id_usuario", nullable = false)
-    int id_usuario;
+    private int idUsuario;
 
-    public EquipoEntidad(String nombre_equipo, int id_usuario) {
+    public EquipoEntidad(String nombre_equipo, int idUsuario) {
         this.nombre_equipo = nombre_equipo;
-        this.id_usuario = id_usuario;
+        this.idUsuario = idUsuario;
     }
 
     public EquipoEntidad(){}

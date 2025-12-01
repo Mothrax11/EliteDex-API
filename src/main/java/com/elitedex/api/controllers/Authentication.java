@@ -6,10 +6,8 @@ import com.elitedex.api.db.services.UsuarioService;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,14 +25,11 @@ public class Authentication {
     public String register(@RequestBody() String body){
         JSONObject json = new JSONObject(body);
 
-        // CORRECCIÓN: Usar los nombres de campo que vienen del DTO de Android
         String username = json.getString("username");
         String email = json.getString("email");
         String contrasena = json.getString("contrasena");
 
         System.out.println(username + email + contrasena);
-
-        // Los parámetros de registrar coinciden con los campos de la Entidad
         UsuarioEntidad usuario = usuarioService.registrar(username, email, contrasena);
 
         return new JSONObject().put("usuarioCreado", usuario != null ? "usuarioCreado" : "usuarioNoCreado").toString();
@@ -53,12 +48,24 @@ public class Authentication {
             respuesta.put("mensaje", "Inicio de sesión exitoso");
             respuesta.put("id_usuario", usuarioLogeado.getId_usuario());
             respuesta.put("username", usuarioLogeado.getNombreUsuario());
-            respuesta.put("imagen_usuario", usuarioLogeado.getLogoUrl());
-            return ResponseEntity.ok(respuesta); // HTTP 200 OK
+            respuesta.put("logo_url", usuarioLogeado.getLogoUrl());
+            return ResponseEntity.ok(respuesta);
         } else {
             Map<String, Object> error = new HashMap<>();
             error.put("error", "Credenciales inválidas");
             return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @PostMapping("/upload-logo/{id}")
+    public ResponseEntity<Map<String, String>> subirLogo(@PathVariable("id") int idUsuario, @RequestParam("file") MultipartFile file) {
+        try {
+            String url = usuarioService.subirLogo(idUsuario, file);
+            Map<String, String> response = new HashMap<>();
+            response.put("url", url);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "Error al subir imagen: " + e.getMessage()));
         }
     }
 }

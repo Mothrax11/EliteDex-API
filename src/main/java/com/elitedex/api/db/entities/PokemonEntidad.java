@@ -12,10 +12,10 @@ public class PokemonEntidad {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int id_pokemon;
+    int idPokemon;
 
     @Column(name = "nombre_pokemon", nullable = false)
-    String nombre_pokemon;
+    String nombrePokemon;
 
     @Column(name = "tipo1", nullable = false)
     String tipo1;
@@ -36,29 +36,20 @@ public class PokemonEntidad {
     String movimiento4;
 
     @Column(name = "id_equipo", nullable = false)
-    int id_equipo;
+    int idEquipo;
 
     @Column(name = "habilidad", nullable = false)
     String habilidad;
 
-    public PokemonEntidad(String nombre_pokemon,
-                          String tipo1,
-                          String tipo2,
-                          String movimiento1,
-                          String movimiento2,
-                          String movimiento3,
-                          String movimiento4,
-                          int id_equipo,
-                          String habilidad){
-
-        this.nombre_pokemon = nombre_pokemon;
+    public PokemonEntidad(String nombre_pokemon, String tipo1, String tipo2, String movimiento1, String movimiento2, String movimiento3, String movimiento4, int id_equipo, String habilidad) {
+        this.nombrePokemon = nombre_pokemon;
         this.tipo1 = tipo1;
         this.tipo2 = tipo2;
         this.movimiento1 = movimiento1;
         this.movimiento2 = movimiento2;
         this.movimiento3 = movimiento3;
         this.movimiento4 = movimiento4;
-        this.id_equipo = id_equipo;
+        this.idEquipo = id_equipo;
         this.habilidad = habilidad;
     }
 

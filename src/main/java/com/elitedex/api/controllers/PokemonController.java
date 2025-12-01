@@ -6,19 +6,27 @@ import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import skaro.pokeapi.client.PokeApiClient;
+import skaro.pokeapi.resource.NamedApiResourceList;
+import skaro.pokeapi.resource.pokemon.Pokemon;
+import skaro.pokeapi.query.PageQuery;
+
 @RestController
 @RequestMapping("/pokemon")
 public class PokemonController {
-
+    private final PokeApiClient pokeApiClient;
     private final PokemonService pokemonService;
+    private final RestTemplate restTemplate;
 
-    public PokemonController(PokemonService pokemonService) {
+    public PokemonController(PokemonService pokemonService, PokeApiClient pokeApiClient, RestTemplate restTemplate) {
         this.pokemonService = pokemonService;
+        this.pokeApiClient = pokeApiClient;
+        this.restTemplate = restTemplate;
     }
 
     @PostMapping("/crear")
@@ -43,7 +51,7 @@ public class PokemonController {
             if (pokemonCreado != null) {
                 return new JSONObject()
                         .put("mensaje", "Pokemon creado con éxito")
-                        .put("id_pokemon", pokemonCreado.getId_pokemon())
+                        .put("id_pokemon", pokemonCreado.getIdPokemon())
                         .toString();
             } else {
                 return new JSONObject()
@@ -110,5 +118,29 @@ public class PokemonController {
         error.put("error", e.getMessage());
 
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping("/todos")
+    public ResponseEntity<NamedApiResourceList<Pokemon>> obtenerTodos() {
+        NamedApiResourceList<Pokemon> lista = pokeApiClient
+                .getResource(Pokemon.class, new PageQuery(1300, 0))
+                .block();
+        return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/detalle/{id}")
+    public ResponseEntity<?> obtenerDetallePokeApi(@PathVariable("id") String id) {
+        try {
+            Pokemon pokemon = pokeApiClient.getResource(Pokemon.class, id).block();
+            if (pokemon == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(pokemon);
+
+        } catch (Exception e) {
+            System.err.println("ERROR CON ID " + id + ":");
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Pokémon con ID " + id + " no encontrado.");
+        }
     }
 }

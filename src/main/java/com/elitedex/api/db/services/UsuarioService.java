@@ -3,7 +3,16 @@ package com.elitedex.api.db.services;
 import com.elitedex.api.db.entities.UsuarioEntidad;
 import com.elitedex.api.db.repositories.UsuarioRepository;
 import com.elitedex.api.utils.PasswordManagement;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 @Service
 public class UsuarioService {
@@ -24,7 +33,6 @@ public class UsuarioService {
     }
 
     public UsuarioEntidad registrar(String nombreUsuario, String correo, String contrasena) {
-        // 1. Validaciones de unicidad usando la excepción de negocio
         if (usuarioRepository.existsByNombreUsuario(nombreUsuario)) {
             throw new RegistroException("El nombre de usuario ya está en uso.");
         }
@@ -32,31 +40,50 @@ public class UsuarioService {
             throw new RegistroException("El correo electrónico ya está registrado.");
         }
 
-        // 2. Hashing
         String hashedPassword = passwordManagement.hashPassword(contrasena);
 
-        // 3. Persistencia
         UsuarioEntidad nuevoUsuario = new UsuarioEntidad(nombreUsuario, correo, hashedPassword);
         return usuarioRepository.save(nuevoUsuario);
     }
 
     public UsuarioEntidad login(String usernameOrEmail, String contrasena) {
 
-        // 1. Búsqueda simplificada: Spring Data ya gestiona la búsqueda por OR
         UsuarioEntidad usuario = usuarioRepository.findByNombreUsuarioOrCorreo(usernameOrEmail, usernameOrEmail);
 
         if (usuario == null) {
-            // Usuario no encontrado por nombre de usuario ni por correo
             return null;
         }
 
-        // 2. Verificación de contraseña usando el hash almacenado
         boolean esValido = passwordManagement.verifyPassword(contrasena, usuario.getPassword_hash());
 
         if (esValido) {
-            return usuario; // Login exitoso
+            return usuario;
         } else {
-            return null; // Contraseña incorrecta
+            return null;
         }
+    }
+    @Value("${app.server.ip}")
+    private String serverIp;
+
+    @Transactional
+    public String subirLogo(int idUsuario, MultipartFile archivo) throws IOException {
+        UsuarioEntidad usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+
+        Path directorioImagenes = Paths.get("uploads");
+        if (!Files.exists(directorioImagenes)) {
+            Files.createDirectories(directorioImagenes);
+        }
+
+        String nombreArchivo = "user_" + idUsuario + "_" + archivo.getOriginalFilename();
+        Path rutaArchivo = directorioImagenes.resolve(nombreArchivo);
+        Files.copy(archivo.getInputStream(), rutaArchivo, StandardCopyOption.REPLACE_EXISTING);
+        String urlPublica = "http://"+ serverIp +"/uploads/" + nombreArchivo;
+
+        usuario.setLogoUrl(urlPublica);
+        usuarioRepository.saveAndFlush(usuario);
+
+        return urlPublica;
     }
 }
